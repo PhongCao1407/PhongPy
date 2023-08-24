@@ -1,4 +1,4 @@
-#include "SimpleCompiler.cpp"
+#include "Interpreter.cpp"
 
 int main() {
 
