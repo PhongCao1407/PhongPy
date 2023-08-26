@@ -1,120 +1,104 @@
-#include <string>
-#include <stack>
-#include <unordered_map>
-#include <vector>
-#include <tuple>
-#include <any>
+#include "Interpreter.h"
 
 #include <iostream>
 
-using namespace std;
-
-class Interpreter
+void Interpreter::run_code(vector<tuple<string, string>> instructions, vector<int> numbers, vector<string> names)
 {
-public:
-    stack<int> stack;
-    unordered_map<string, int> environment;
 
-    void run_code(vector<tuple<string, string>> instructions, vector<int> numbers, vector<string> names)
+    for (tuple<string, string> each_step : instructions)
     {
+        string instruction = get<0>(each_step);
+        string argument = get<1>(each_step);
 
-        for (tuple<string, string> each_step : instructions)
+        void *parsed_argument = NULL;
+
+        if (argument != "")
         {
-            string instruction = get<0>(each_step);
-            string argument = get<1>(each_step);
-
-            void *parsed_argument = NULL;
-
-            if (argument != "")
-            {
-                parsed_argument = parse_argument(instruction, stoi(argument), numbers, names);
-            }
-
-            if (instruction == "LOAD_VALUE")
-            {
-                int number = *((int *)parsed_argument);
-                
-                LOAD_VALUE(number);
-            }
-            else if (instruction == "STORE_NAME")
-            {
-                string name = *((string *)parsed_argument);
-                STORE_NAME(name);
-            }
-            else if (instruction == "LOAD_NAME")
-            {
-                string name = *((string *)parsed_argument);
-                LOAD_NAME(name);
-            }
-            else if (instruction == "ADD_TWO_VALUES")
-            {
-                ADD_TWO_VALUES();
-            }
-            else if (instruction == "PRINT_ANSWER")
-            {
-                PRINT_ANSWER();
-            }
-
+            parsed_argument = parse_argument(instruction, stoi(argument), numbers, names);
         }
-    }
 
-    void *parse_argument(string instruction, int argument, vector<int> &numbers, vector<string> &names)
-    {
-        void *parsed_argument;
         if (instruction == "LOAD_VALUE")
         {
-            parsed_argument = &numbers[argument];
+            int number = *((int *)parsed_argument);
+
+            LOAD_VALUE(number);
         }
-        else if (instruction == "LOAD_NAME" || instruction == "STORE_NAME")
+        else if (instruction == "STORE_NAME")
         {
-            
-            parsed_argument = &names[argument];
+            string name = *((string *)parsed_argument);
+            STORE_NAME(name);
         }
-
-        return parsed_argument;
+        else if (instruction == "LOAD_NAME")
+        {
+            string name = *((string *)parsed_argument);
+            LOAD_NAME(name);
+        }
+        else if (instruction == "ADD_TWO_VALUES")
+        {
+            ADD_TWO_VALUES();
+        }
+        else if (instruction == "PRINT_ANSWER")
+        {
+            PRINT_ANSWER();
+        }
     }
+}
 
-private:
-    void LOAD_VALUE(int number)
+void *Interpreter::parse_argument(string instruction, int argument, vector<int> &numbers, vector<string> &names)
+{
+    void *parsed_argument;
+    if (instruction == "LOAD_VALUE")
     {
-        stack.push(number);
+        parsed_argument = &numbers[argument];
     }
-
-    void STORE_NAME(string name)
+    else if (instruction == "LOAD_NAME" || instruction == "STORE_NAME")
     {
-        int val = stack.top();
-        stack.pop();
 
-        environment[name] = val;
+        parsed_argument = &names[argument];
     }
 
-    void LOAD_NAME(string name)
-    {
-        int val = environment[name];
+    return parsed_argument;
+}
 
-        stack.push(val);
-    }
+void Interpreter::LOAD_VALUE(int number)
+{
+    stack.push(number);
+}
 
-    void PRINT_ANSWER()
-    {
-        int answer = stack.top();
-        stack.pop();
+void Interpreter::STORE_NAME(string name)
+{
+    int val = Interpreter::stack.top();
+    stack.pop();
 
-        cout << answer << endl;
-    }
+    environment[name] = val;
+}
 
-    void ADD_TWO_VALUES()
-    {
-        int firstNum = stack.top();
-        stack.pop();
+void Interpreter::LOAD_NAME(string name)
+{
+    int val = environment[name];
 
-        int secondNum = stack.top();
-        stack.pop();
+    stack.push(val);
+}
 
-        // cout << firstNum << endl;
-        // cout << secondNum << endl;
+void Interpreter::PRINT_ANSWER()
+{
+    int answer = stack.top();
+    stack.pop();
 
-        int total = firstNum + secondNum;
-        stack.push(total);
-    }
-};
+    cout << answer << endl;
+}
+
+void Interpreter::ADD_TWO_VALUES()
+{
+    int firstNum = stack.top();
+    stack.pop();
+
+    int secondNum = stack.top();
+    stack.pop();
+
+    // cout << firstNum << endl;
+    // cout << secondNum << endl;
+
+    int total = firstNum + secondNum;
+    stack.push(total);
+}
